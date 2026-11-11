@@ -1,0 +1,64 @@
+# Example only. Copy to an untracked local file before deployment.
+# Never store credentials or HMAC secrets in this file.
+system:
+  language: "fr"
+  sample_rate_hz: 16000
+  audio_channels: 1
+  max_utterance_seconds: 8
+  idle_audio_forwarding: false
+
+audio_endpoint:
+  device: "default"
+  wake_word:
+    engine: "openwakeword"
+    model_path: "/opt/robot/models/wakeword.onnx"
+    threshold: 0.55
+  vad:
+    engine: "webrtcvad"
+    aggressiveness: 2
+    end_silence_ms: 550
+    pre_roll_ms: 250
+  local_stt:
+    engine: "vosk"
+    model_path: "/opt/robot/models/vosk-fr-small"
+    grammar:
+      - "stop"
+      - "annule"
+      - "aide"
+      - "répète"
+      - "état du robot"
+      - "va à l'accueil"
+    min_confidence: 0.80
+  responses:
+    prerecorded_directory: "/opt/robot/audio"
+
+pc_fallback:
+  enabled: true
+  host: "192.168.1.10"
+  port: 8765
+  connect_timeout_ms: 300
+  request_timeout_ms: 5000
+  stt_engine: "faster-whisper"
+  llm_engine: "ollama"
+  llm_model: "qwen2.5:3b"
+  tts_engine: "piper"
+  stream_tts_chunks: true
+
+robot_bridge:
+  host: "192.168.1.20"
+  port: 8766
+  protocol_version: 1
+  authentication: "hmac-sha256"
+  secret_environment_variable: "ROBOT_VOICE_HMAC_KEY"
+  allowed_actions:
+    - "cancel_navigation"
+    - "navigate_to_named_location"
+    - "get_robot_status"
+  deny_velocity_topics: true
+  deny_motor_pwm: true
+  voice_can_reset_estop: false
+
+timeouts:
+  wake_session_seconds: 10
+  network_retry_count: 0
+  pending_action_ttl_seconds: 5
