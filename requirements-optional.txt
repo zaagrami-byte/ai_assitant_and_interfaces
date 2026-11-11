@@ -1,0 +1,8 @@
+# Optional runtime components; install and benchmark on target hardware.
+# Audio endpoint candidates:
+openwakeword
+webrtcvad-wheels
+vosk
+
+# PC fallback candidates (install on the PC only):
+faster-whisper
