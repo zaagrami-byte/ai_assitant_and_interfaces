@@ -34,5 +34,5 @@ def register(registry: ToolRegistry, ctx: "ToolContext") -> None:
                   "Vérifiez le robot.", stopped=False, estop_confirmed=False)
 
     registry.register(Tool(
-        "stop_robot", "Arrête le robot immédiatement (annule la navigation et déclenche l'arrêt d'urgence).",
+        "stop_robot", "Annule le déplacement Nav2 en cours. Ne remplace jamais l'arrêt d'urgence matériel.",
         {"type": "object", "properties": {}, "additionalProperties": False}, stop_robot)) 

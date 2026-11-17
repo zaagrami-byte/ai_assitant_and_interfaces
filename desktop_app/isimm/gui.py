@@ -419,7 +419,7 @@ class Window(QMainWindow):
             self.answer.setPlainText(v)
         elif key == "timing":
             self.timing.setText(
-                f"Fin de parole → texte {v['endpoint_stt']:.1f} s   ·   Premier token {v['stt_token']:.1f} s   ·   Texte → voix {v['token_sound']:.1f} s   ·   Total {v['perceived']:.1f} s"
+                f"Fin de parole → texte {v['endpoint_stt']:.1f} s   ·   Durée LLM {v['stt_token']:.1f} s   ·   Texte → voix {v['token_sound']:.1f} s   ·   Total {v['perceived']:.1f} s"
             )
         elif key == "review":
             request_id, text = v
