@@ -206,100 +206,20 @@ class Window(QMainWindow):
 
     def settings(self):
         dlg = QDialog(self)
-        dlg.setWindowTitle("Paramètres de la session")
+        dlg.setWindowTitle("Configuration de la caméra IP")
         form = QFormLayout(dlg)
         camera = QLineEdit(self.cfg.camera)
-        camera.setPlaceholderText("Vide pour le mode sans caméra")
-        mic = QComboBox()
-        mic.setEditable(True)
-        mic.addItem("", "")
-        mic.setEditText(self.cfg.mic)
-        discovery = QProcess(dlg)
-
-        def show_inputs(code, status):
-            if code != 0:
-                return
-            try:
-                devices = json.loads(bytes(discovery.readAllStandardOutput()))
-            except (ValueError, UnicodeDecodeError):
-                return
-            current = mic.currentText()
-            for index, name in devices:
-                mic.addItem(f"{index} · {name}", index)
-            found = mic.findData(current)
-            if found >= 0:
-                mic.setCurrentIndex(found)
-            else:
-                mic.setEditText(current)
-
-        discovery.finished.connect(show_inputs)
-        discovery.start(sys.executable, ["-m", "isimm.devices"])
-        QTimer.singleShot(3500, discovery.kill)
-
-        def combo(values, current):
-            w = QComboBox()
-            w.addItems(values)
-            w.setCurrentText(current)
-            return w
-
-        stt = combo(["small", "base"], self.cfg.stt if self.cfg.stt in ("small", "base") else "small")
-        llm = combo(["qwen2.5:3b"], "qwen2.5:3b")
-        voice = combo(["piper"], "piper")
-        cloudvoice = combo(
-            ["ar-TN-ReemNeural", "ar-TN-HediNeural"], self.cfg.azure_voice
-        )
-
-        def number(value, low, high):
-            w = QDoubleSpinBox()
-            w.setRange(low, high)
-            w.setSingleStep(0.05)
-            w.setValue(value)
-            return w
-
-        volume = number(self.cfg.volume, 0, 1)
-        speed = number(self.cfg.speed, 0.6, 1.6)
-        hold = QCheckBox("Maintenir le bouton pendant la question")
-        hold.setChecked(self.cfg.push_to_talk)
-        review = QCheckBox("Confirmer ou corriger le texte avant la réponse")
-        review.setChecked(self.cfg.review_text)
-        for name, w in [
-            ("Flux IP", camera),
-            ("Microphone (vide = défaut)", mic),
-            ("Tour de parole", hold),
-            ("Transcription", review),
-            ("Reconnaissance", stt),
-            ("Modèle Ollama", llm),
-            ("Voix française", voice),
-            ("Vitesse", speed),
-            ("Volume", volume),
-        ]:
-            form.addRow(name, w)
+        camera.setPlaceholderText("rtsp://… ou URL HTTP du flux vidéo")
+        form.addRow("Flux caméra IP sur le PC", camera)
         buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         buttons.accepted.connect(dlg.accept)
         buttons.rejected.connect(dlg.reject)
         form.addRow(buttons)
         if dlg.exec():
-            self.cfg.push_to_talk = hold.isChecked()
-            self.cfg.review_text = review.isChecked()
             self.cfg.camera = camera.text().strip()
-            self.cfg.mic = (
-                mic.currentData()
-                if mic.currentText() == mic.itemText(mic.currentIndex())
-                else mic.currentText().strip()
+            self.notice.setText(
+                "Adresse caméra enregistrée. Redémarrez la session pour appliquer le flux."
             )
-            self.cfg.stt, self.cfg.llm, self.cfg.voice = (
-                stt.currentText(),
-                llm.currentText(),
-                voice.currentText(),
-            )
-            self.cfg.volume, self.cfg.speed = volume.value(), speed.value()
-            self.cfg.denoise = False
-            self.cfg.azure = False
-            self.cfg.voice = "piper"
-
-        if discovery.state() != QProcess.NotRunning:
-            discovery.kill()
-            discovery.waitForFinished(150)
         dlg.deleteLater()
 
     def start(self):

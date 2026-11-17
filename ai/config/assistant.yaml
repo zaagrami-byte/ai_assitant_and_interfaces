@@ -58,7 +58,7 @@ ros:
 robot:
   # estop  : stop_robot annule le but Nav2 ET publie /emergency_stop (réarmement humain)
   # cancel : stop_robot annule seulement le but Nav2
-  stop_mode: estop
+  stop_mode: cancel
 
 wake:                       # écoute permanente par défaut ; activer pour un mot-clé
   enabled: false
