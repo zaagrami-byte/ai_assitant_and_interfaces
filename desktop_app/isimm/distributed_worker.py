@@ -74,7 +74,8 @@ def voice_worker(cfg, commands, events, stop, approvals, talk_gate):
         emit("notice", f"En attente du Raspberry Pi sur le port audio {settings.audio_port}.")
 
         active = False
-        history_count = 0
+        pending_start = False
+        waiting_notice_sent = False
         while not stop.is_set():
             try:
                 command = commands.get(timeout=0.02)
@@ -83,21 +84,29 @@ def voice_worker(cfg, commands, events, stop, approvals, talk_gate):
                 if command == "prepare":
                     continue
                 if command == "start":
-                    if not server.connected:
-                        emit("notice", "Raspberry Pi non connecté. Vérifiez AUDIO_PC_HOST et le réseau.")
-                        emit("done", True)
-                        continue
-                    server.clear_mic()
-                    segmenter.reset()
-                    active = True
-                    emit("state", "GREETING")
-                    welcome = "Bienvenue à l’ISIMM ! Quelle est votre question ?"
-                    server.play(tts.synthesize(welcome))
-                    emit("answer", welcome)
-                    emit("state", "LISTENING")
-                    emit("mic", True)
+                    pending_start = True
+                    waiting_notice_sent = False
             except queue.Empty:
                 pass
+
+            if pending_start and not server.connected:
+                if not waiting_notice_sent:
+                    emit("notice", "En attente de la connexion audio du Raspberry Pi…")
+                    waiting_notice_sent = True
+                time.sleep(0.05)
+                continue
+
+            if pending_start and server.connected:
+                pending_start = False
+                server.clear_mic()
+                segmenter.reset()
+                active = True
+                emit("state", "GREETING")
+                welcome = "Bienvenue à l’ISIMM ! Quelle est votre question ?"
+                server.play(tts.synthesize(welcome))
+                emit("answer", welcome)
+                emit("state", "LISTENING")
+                emit("mic", True)
 
             if not active:
                 # Vide les anciennes trames pendant l'attente pour éviter une question obsolète.

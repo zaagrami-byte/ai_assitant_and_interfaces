@@ -258,18 +258,13 @@ class Window(QMainWindow):
 
         volume = number(self.cfg.volume, 0, 1)
         speed = number(self.cfg.speed, 0.6, 1.6)
-        denoise = QCheckBox("DeepFilterNet")
-        denoise.setChecked(self.cfg.denoise)
         hold = QCheckBox("Maintenir le bouton pendant la question")
         hold.setChecked(self.cfg.push_to_talk)
         review = QCheckBox("Confirmer ou corriger le texte avant la réponse")
         review.setChecked(self.cfg.review_text)
-        azure = QCheckBox("Autoriser les demandes de lecture Azure")
-        azure.setChecked(self.cfg.azure)
         for name, w in [
             ("Flux IP", camera),
             ("Microphone (vide = défaut)", mic),
-            ("Réduction de bruit", denoise),
             ("Tour de parole", hold),
             ("Transcription", review),
             ("Reconnaissance", stt),
@@ -277,8 +272,6 @@ class Window(QMainWindow):
             ("Voix française", voice),
             ("Vitesse", speed),
             ("Volume", volume),
-            ("Voix tunisienne en ligne", azure),
-            ("Voix Azure", cloudvoice),
         ]:
             form.addRow(name, w)
         buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
@@ -300,11 +293,9 @@ class Window(QMainWindow):
                 voice.currentText(),
             )
             self.cfg.volume, self.cfg.speed = volume.value(), speed.value()
-            self.cfg.denoise, self.cfg.azure, self.cfg.azure_voice = (
-                denoise.isChecked(),
-                azure.isChecked(),
-                cloudvoice.currentText(),
-            )
+            self.cfg.denoise = False
+            self.cfg.azure = False
+            self.cfg.voice = "piper"
 
         if discovery.state() != QProcess.NotRunning:
             discovery.kill()
@@ -352,7 +343,7 @@ class Window(QMainWindow):
                 daemon=True,
             )
             self.camera.start()
-            self.video.setText("Connexion au smartphone…")
+            self.video.setText("Connexion à la caméra IP…")
         else:
             self.video.setText("Mode sans caméra")
         if self.free_ram > 2.8:
