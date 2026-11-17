@@ -82,7 +82,7 @@ def card():
 
 
 def voice_process(*args):
-    from .conversation import voice_worker
+    from .distributed_worker import voice_worker
 
     voice_worker(*args)
 
@@ -242,9 +242,9 @@ class Window(QMainWindow):
             w.setCurrentText(current)
             return w
 
-        stt = combo(["auto", "small", "base"], self.cfg.stt)
-        llm = combo(["auto", "qwen3.5:4b", "qwen3.5:2b"], self.cfg.llm)
-        voice = combo(["ff_siwis", "piper"], self.cfg.voice)
+        stt = combo(["small", "base"], self.cfg.stt if self.cfg.stt in ("small", "base") else "small")
+        llm = combo(["qwen2.5:3b"], "qwen2.5:3b")
+        voice = combo(["piper"], "piper")
         cloudvoice = combo(
             ["ar-TN-ReemNeural", "ar-TN-HediNeural"], self.cfg.azure_voice
         )
