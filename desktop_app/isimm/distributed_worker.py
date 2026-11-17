@@ -177,7 +177,6 @@ def voice_worker(cfg, commands, events, stop, approvals, talk_gate):
                 "token_sound": max(0.0, time.monotonic() - sound_started),
                 "perceived": total,
             })
-            history_count += 1
             emit("state", "LISTENING")
             emit("mic", True)
 
